@@ -10,7 +10,7 @@ public class Usuario {
     private String apellido2;
 
     private List<Objeto> objts = null; //Consideramos una cola, asi se ordenan por orden de insercion
-    private int numobj; //Numero de objetos en la lista
+    private int numobj = 0; //Numero de objetos en la lista
 
     public Usuario() {
 
@@ -75,7 +75,7 @@ public class Usuario {
         try {
             this.objts.add(this.numobj, o);
             numobj++;
-            return 200;
+            return 201;
         }
         catch (IllegalArgumentException e){
             return 400;
@@ -90,7 +90,7 @@ public class Usuario {
             for (Objeto o : lo) {
                 this.setObjeto(o);
             }
-            return 200;
+            return 201;
         }
         catch (IllegalArgumentException e){
             return 400;
@@ -99,5 +99,10 @@ public class Usuario {
             return 507;
         }
     }
+
+    public String toString(){
+        return "ID: " + this.getIDusr() + " | Nombre: " + this.getNombreusr() + " | Apellido 1: " + this.getApellido1() + " | Apellido 2: " + this.getApellido2();
+    }
+
 
 }

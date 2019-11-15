@@ -33,30 +33,39 @@ public class GameManagerImpl implements GameManager {
     }
 
     //--------------------Metodos (no estaticos) del Manager---------------------//
-    public List<Usuario> listadoUsuariosOrdAlfab (){ //ORDENAMOS ALFABETICAMENTE  POR NOMBRE
+    public List<Usuario> getListadoUsuariosOrdAlfab(){ //ORDENAMOS ALFABETICAMENTE  POR NOMBRE
+        if(this.tablausuarios != null) {
+            List<Usuario> res = new LinkedList<Usuario>(tablausuarios.values());
 
-        List<Usuario> res = new ArrayList<Usuario>(tablausuarios.values());
-        List<String> res2 = null;
-        for(Usuario u : res){
-            assert false;
-            res2.add(u.getNombreusr());
+            Collections.sort(res, new Comparator<Usuario>() {
+                @Override
+                public int compare(Usuario u1, Usuario u2) {
+                    return u1.getNombreusr().compareToIgnoreCase(u2.getNombreusr()); //ToIgnoreCase: para no distinguir mayusculas y minusculas
+                }
+            });
+            log.info("Lista ordenada alfabeticamente: " + res.toString());
+            return res; //200 OK PETITION
         }
-        /*
-        res.sort(new Comparator<Usuario>() {
-            @Override
-            public int compare(Usuario p1, Usuario p2) {
-                return Usuario.compare(p1.getNombreusr(), p2.getNombreusr());
-            }
-        });
-         */
-        return res;
+        else
+            return null; //404 (TABLA VACIA)
+
+        /*List<String> l2 = null;
+
+        for(Usuario u : l1){
+            assert false;
+            l2.add(u.getNombreusr());
+        }
+        assert false;
+        Collections.sort(l2);
+
+        */
     }
 
     public int anadirUsuario(Usuario u){
         try {
             this.tablausuarios.put(u.getIDusr(), u);
             log.info("Usuario añadido: " + u);
-            return 200; //OK
+            return 201; //OK CREATED
         }
         catch (IndexOutOfBoundsException e){
             log.error("Error. Tabla de usuarios llena");
@@ -77,10 +86,10 @@ public class GameManagerImpl implements GameManager {
                 res.setApellido1(ap1nuevo);
                 res.setApellido2(ap2nuevo);
                 log.info("Parametros cambiados. Usuario actual:" + res);
-                return 200;
+                return 201; //OK CREATED
             }
             catch (IllegalArgumentException e){
-                log.error("Error en el formato de los parametros");
+                log.error("Error en el formato de los parámetros");
                 return 400; //BAD REQUEST
             }
         }
@@ -88,49 +97,52 @@ public class GameManagerImpl implements GameManager {
             return 404; //Usuario NOT FOUND
     }
 
-    public int numeroUsuarios(){
+    public int consultarNumeroUsuarios(){
         return this.tablausuarios.size();
     }
 
-    public String consultarUsuario(String id){ //Suponemos que el usuario introduce su ID para consultar sus datos
+    public String consultarUsuarioTXT(String id){ //Suponemos que el usuario introduce su ID para consultar sus datos
         Usuario u = tablausuarios.get(id);
         if(u != null) {
             try {
-                String res = "Nombre: " + u.getNombreusr() + " Apellido1 1: " + u.getApellido1() + " Apellido 2: " + u.getApellido2();
-                log.info("Usuario consultado: " + res);
-                return res;
+                log.info("Usuario consultado: " + u);
+                return u.toString(); //200 OK PETITION
             }
             catch (IllegalArgumentException e){
-                log.error("Error en el formato de los parametros");
-                return "400";
+                log.error("Error en el formato del parametro");
+                return "400"; //BAD REQUEST
             }
         }
         else{
             log.error("Usuario no encontrado");
-            return "404";
+            return "404"; //Usuario NOT FOUND
         }
+    }
+
+    public Usuario consultarUsuarioUSR(String iduser){
+        return this.tablausuarios.get(iduser);
     }
 
     public int anadirObjetoAUsuario(String idusr, Objeto o){
         Usuario u = tablausuarios.get(idusr);
         if(u != null){
             int err = u.setObjeto(o);
-            if(err == 200){
-                log.info("Objeto anadido al usario " + u.getNombreusr() + " : " + o);
-                return 200;
+            if(err == 201){
+                log.info("Objeto anadido al Usario " + u.getNombreusr() + " : " + o);
+                return 201; //OK CREATED
             }
             else if(err == 400){
                 log.error("Error formato de entrada");
-                return 400;
+                return 400; //BAD REQUEST
             }
             else{
                 log.error("No caben mas objetos en el inventario del usuario");
-                return 507;
+                return 507; //INSUFFICIENT STORAGE
             }
         }
         else{
             log.error("Usuario no encontrado");
-            return 404;
+            return 404; //Usuario NOT FOUND
         }
     }
 
@@ -140,29 +152,63 @@ public class GameManagerImpl implements GameManager {
             List<Objeto> res = u.getListaObjetos();
             if(res != null){
                 log.info("Objetos del usuario: " + u.getNombreusr() + " : " + res);
-                return res;
+                return res; // 200 OK PETITION
             }
             else{
                 log.error("Inventario del usuario vacío");
-                return null; //404 DE LISTA
+                return null; //404 Lista NOT FOUND
             }
         }
         else{
             log.error("Usuario no encontrado");
-            return null; //404 DE USUARIO
+            return null; //404 Usuario NOT FOUND
         }
     }
 
     public int consultarNumObjUsuario(String idusr){
         Usuario u = tablausuarios.get(idusr);
         if(u != null){
-            log.info("Numero de objetos del usuario " + u.getNombreusr());
-            return u.getNumobj();
+            log.info("Numero de objetos del usuario " + u.getNombreusr() + " : " + u.getNumobj());
+            return u.getNumobj(); // 200 OK PETITION
         }
         else{
             log.error("Usuario no encontrado");
-            return 404;
+            return 404; //Usuario NOT FOUND
         }
+    }
+
+    //----------------------------Funciones auxiliares---------------------------------//
+    public int addObjeto(Objeto o){
+        try {
+            this.listaobj.add(this.numobjmanager, o);
+            log.info("Objeto añadido correctamente al manager: " + o);
+            return 201; //OK CREATED
+        }
+        catch (IllegalArgumentException e){
+            log.error("Error formato parametros");
+            return 400; //BAD REQUEST
+        }
+        catch (IndexOutOfBoundsException e){
+            log.error("Lista de objetos del manager llena");
+            return 507; //INSUFFICIENT STORAGE
+        }
+    }
+
+    public Objeto getObjeto(String id){
+        Objeto obj = null;
+        for(Objeto o : this.listaobj){
+            if (o.getIDobj().compareTo(id) == 0)
+                obj = o;
+        }
+        return obj; //Null: 404 Objeto NOT FOUND
+    }
+
+    public List<Usuario> getListaUsuarios (){
+        List<Usuario> res = null;
+        if(this.tablausuarios != null){
+            res = new LinkedList<>(tablausuarios.values());
+        }
+        return res; //Null: 404 Tabla de Usaurios vacía
     }
 
     public void liberarRecursos(){
@@ -171,25 +217,4 @@ public class GameManagerImpl implements GameManager {
         this.numobjmanager = 0;
     }
 
-    //----------------------------Funciones auxiliares---------------------------------//
-    public void addObjeto(Objeto o){
-        try {
-            this.listaobj.add(this.numobjmanager, o);
-            log.info("Objeto añadido correctamente al manager: " + o);
-        }
-        catch (IllegalArgumentException e){
-            log.error("Error formato parametros");
-        }
-        catch (IndexOutOfBoundsException e){
-            log.error("Lista de objetos del manager llena");
-        }
-    }
-
-    public Objeto getObjeto(String id){
-        for(Objeto o : this.listaobj){
-            if (o.getIDobj().compareTo(id) == 0)
-                return o;
-        }
-
-    }
 }

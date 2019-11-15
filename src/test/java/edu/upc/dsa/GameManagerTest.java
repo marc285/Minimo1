@@ -7,9 +7,6 @@ import org.junit.Test;
 
 import edu.upc.dsa.models.*;
 
-import edu.upc.dsa.GameManager;
-import edu.upc.dsa.GameManagerImpl;
-
 public class GameManagerTest {
     public GameManagerImpl manager = null;
 
@@ -18,10 +15,10 @@ public class GameManagerTest {
         manager = GameManagerImpl.getInstance();
 
         manager.anadirUsuario(new Usuario("12345", "Marc", "Cayuelas", "Lobato"));
-        manager.addObjeto(new Objeto("4321", "espada"));
-        manager.addObjeto(new Objeto("0001", "escudo"));
+        manager.addObjeto(new Objeto("0001", "espada"));
+        manager.addObjeto(new Objeto("1000", "escudo"));
 
-        manager.anadirObjetoAUsuario("12345", this.manager.getObjeto("4321"));
+        manager.anadirObjetoAUsuario("12345", this.manager.getObjeto("0001"));
 
     }
 
@@ -31,12 +28,20 @@ public class GameManagerTest {
     }
 
     @Test
-    public void AnadirTest(){
-        Assert.assertEquals(1, this.manager.numeroUsuarios());
+    public void anadirUsuarioTest(){
+        Assert.assertEquals(1, this.manager.consultarNumeroUsuarios()); //Comprobación inicial
+
+        //Probamos a añadir otro usuario
+        manager.anadirUsuario(new Usuario("01010", "Toni", "Oller", "Arcas"));
+        Assert.assertEquals(2, manager.consultarNumeroUsuarios());
     }
 
     @Test
-    public void test2(){
+    public void anadirObjetoAsociadoTest(){
+        Assert.assertEquals(1, manager.consultarNumObjUsuario("12345")); //Comprobación inicial
 
+        //Probamos a añadirle al usuario Marc (id="12345") un nuevo objeto escudo (id = "1000")
+        manager.anadirObjetoAUsuario("12345", manager.getObjeto("1000"));
+        Assert.assertEquals(2, manager.consultarNumObjUsuario("12345"));
     }
 }

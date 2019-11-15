@@ -29,4 +29,8 @@ public class Objeto {
     public void setNombreobj(String nombreobj) {
         this.nombreobj = nombreobj;
     }
+
+    public String toString (){
+        return "ID: " + this.getIDobj() + " | Nombre: " + this.getNombreobj();
+    }
 }
